@@ -67,7 +67,7 @@ router.get('/api/CustomerCageCabinet/:timePeriod/:customer/:cage/:cabinet', func
     redisClient.get(key, function(err, cachedValue) {
         if (cachedValue) {
             redisClient.expire(key, 10);
-            renderResults(JSON.parse(cachedValue));
+            writeResults(JSON.parse(cachedValue));
             console.log("Cached");
         }
         else {
@@ -111,7 +111,13 @@ router.get('/api/CustomerCageCabinet/:timePeriod/:customer/:cage/:cabinet', func
             result.rows.push(row);
             result.aggregatedCount++;
         }
-        res.write(JSON.stringify(result));
+        writeResults(result);
+    }
+
+    function writeResults(results) {
+        redisClient.set(key, JSON.stringify(results));
+        redisClient.expire(key, 10);
+        res.write(JSON.stringify(results));
         res.end();
     }
 });
